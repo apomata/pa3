@@ -8,17 +8,17 @@ class MazeMaker
 		@m = m-2
 
 		# bow to your master ruby muhahaha
-		#for a prim's algorithm (sort of)
+		# for a prim's algorithm (sort of)
 		# makes a grid alternates rows of 0,1's and 1s
 		@maze  = Array.new(@m) {|f| f = Array.new(@n) {|e| e = f%2 == 0 ? ((e)%2): 1}}
-		#to be drawn on in process and then returned
+		# to be drawn on in process and then returned
 		@maze_drawable  = Array.new(@m) {|f| f = Array.new(@n) {|e| e = f%2 == 0 ? ((e)%2): 1}}
-		#makes grid of random weights for the maze 0 spaces have to be visited but 
-		#have lower weights (0-20) more likely to be visited from any spot, 1's have weight depending on
+		# makes grid of random weights for the maze 0 spaces have to be visited but 
+		# have lower weights (0-20) more likely to be visited from any spot, 1's have weight depending on
 		# if they are hroizontal vertical or cross walls to give more randomizeability and ensure higher probability of walls or direction
 		@maze_paths = Array.new(@m) {|f| f = Array.new(@m) {|e| e = (f)%2 == 1 ? ((e)%2 == 0 ? rand(40) : 10+rand(110)) : ((e)%2 == 0 ? rand(20) : 10+rand(40))}}
 	end
-
+	# sorta prims algorithm to walk through and connect spaces leaving walls
 	def make_maze 
 		@possible_moves = []
 		#must visit
@@ -36,7 +36,7 @@ class MazeMaker
 			#deletes if it is a 0 if not nothing happens
 			if @maze[temp.y] [temp.x] == 0 then	zeros.pop end
 		end
-		return maze_draw
+		return draw_maze
 	end
 =begin
 	#for testing(remove)
@@ -52,6 +52,7 @@ class MazeMaker
 	end
 =end
 	private
+	#checks the adjacent positions to see if already done
 	def adjacent(x, y)
 		queue = []
 		if check_position(x+1, y) then queue << Place.new(x+1, y, nil, @maze_paths[y][x+1]) end
@@ -68,7 +69,7 @@ class MazeMaker
 		else return false end
 	end
 	#turn to 0's and 1's and add boarders so valid maze
-	def maze_draw
+	def draw_maze
 		t = @maze_drawable.map{|ar| ar.map{|sp| sp == 2 ? 0 : 1}}
 		t.unshift (Array.new(@n){1})
 		t.push(Array.new(@n){1})

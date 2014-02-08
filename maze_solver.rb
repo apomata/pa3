@@ -23,7 +23,6 @@ class MazeSolver
 			#use .shift to remove and return first element arrays are linked lists
 			position = queue.shift
 			x, y = position.x, position.y
-			#if x == @end.x && y == @end.y
 			if position == @end
 				found, finish = true, position
 			else

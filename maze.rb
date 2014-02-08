@@ -1,93 +1,93 @@
-class Point
-	attr_accessor :x, :y, :parent
-	def initialize(x, y, parent)
-		@x = x
-		@y = y
-		@parent = parent
-	end
-end
+require_relative 'maze_solver.rb'
+require_relative 'place.rb'
+require_relative 'maze_maker.rb'
+require 'pry'
 class Maze
 	attr_accessor :maze
 	def initialize(n ,m)
 		@n = n
 		@m = m
-		@string_maze = "1"*(m*n)
 		@maze = Array.new(m){Array.new(n){1}}
 	end
 
+	#return item at position x y
 	def get_position(x, y)
 		return maze[y][x]
 	end
+
 	#make sure the string is the correct length 
 	#to be split and inserted in the array
 	def check_string(s)
 		return s.length == @m*@n
 	end
 
+	#take string insert into array
 	def load(s)
 		if check_string(s)
-			@string_maze
-			#s_arr= s.split("").map!{|i| i.to_i}
-			s_arr= s.split("").map!{|i| i.to_i}.each_index{|i| @maze[i/@n][i% @n] =s[i]}
-		end
-			#insert(s_arr)
+			s_arr= s.split("").each_index{|i| @maze[i/@n][i% @n] = s[i].to_i}
 		end
 	end
 
-	#def insert(a)
-	#	a.each do |i|
-	#		@maze[a.index(i)/@n}[a.index(i)% @n)] = i
-	#	end
-	#end
-
+	#prints the maze
 	def display(*args)
 		m = args[0]
 		m ||= @maze
-		maze.each do |ar|
+		m.each do |ar|
 			ar.each do |space|
-				print space
+				print space.to_s
 			end
 			puts ""
 		end
 	end
-
-	def solve(s_x, s_y, e_x, e_y, *args)
-		#mass initialization
-		queue, found, temp_maze, start = [], false, @maze.clone, Point(s_x, s_y, nil)
-		finish
-		queue << start
-		while !queue.empty?  && !found
-			#use .shift to remove and return first element arrays are linked lists
-			position = queue.shift
-			x, y = position.x, position.y
-			if x = e_x && y = e_y
-				found = true
-				finish = position
-			else
-				#2 marks positions already visited
-				temp_maze[x][y] = 2
-				if check_position(x+1, y, temp_maze) then queue << Point.new(x+1, y, position) 
-				if check_position(x-1, y, temp_maze) then queue << Point.new(x-1, y, position) 
-				if check_position(x, y+1, temp_maze) then queue << Point.new(x, y+1, position) 	
-				if check_position(x, y-1, temp_maze) then queue << Point.new(x, y-1, position) 
-			end
-		end
-		args[0].nil? ? found : [found, finish]
+	
+	#make sure a place is within the boundarys of a maze and a valid position
+	#mazes should me made of 0's and 1s 
+	def check_place(place)
+		if place.x.between?(0, @n-1) && place.y.between?(0,@m-1)
+			return (@maze[place.y][place.x]== 0)
+		else return false end
 	end
 
-	def check_position(x, y, temp_maze)
-		return (temp_maze[y][x]==0)
+	#returns weather a maze can be solved or not
+	def solve(s_x, s_y, e_x, e_y)
+		start = Place.new( s_x, s_y, nil)
+		end_p = Place.new(e_x, e_y, nil)
+		if check_place(start)&&check_place(end_p)
+			return MazeSolver.new(@n, @m, @maze, start, end_p).solve
+		else puts "invalid start or end" end
 	end
 
-	def trace (s_x, s_y, e_w, e_y)
-		found, solution = solve(s_x, s_y, e_w, e_y, true)
-		if found
-			stack, temp_maze, position = [], @maze.clone, solution
-			while !position.parent.nil?
-				temp_maze[position.y][position.x] =" "
-				stack.push position
-			end
-			stack.map{|pos| puts "move to :#{pos.x}, #{pos.y}"}
+	#solzes the maze and produces a print out of steps along with a drawing of the maze and path
+	def trace(s_x, s_y, e_x, e_y)
+		start = Place.new( s_x, s_y, nil)
+		end_p = Place.new(e_x, e_y, nil)
+		if check_place(start)&&check_place(end_p)
+			t = MazeSolver.new(@n, @m, @maze, start, end_p).trace
+			display(t)
+		else puts "invalid start or end" end
+	end
 
+	#makes a new random maze
+	def redesign
+		m = MazeMaker.new(@n,@m)
+		@maze = m.make_maze
+	end
 end
 
+
+m = Maze.new(9,9)
+s = "111111111100010001111010101100010101101110101100000101111011101100000101111111111"
+m.load(s)
+m.display
+binding.pry
+puts ""
+a = m.solve(1,1,7,7)
+puts ""
+binding.pry
+m.trace(1,1,7,7)
+puts ""
+binding.pry
+m.redesign
+m.display
+binding.pry
+m.trace(1,1,7,7)
